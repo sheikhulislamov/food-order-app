@@ -2,19 +2,52 @@
     and provides that context to all components 
     that want access to it */
 
+import { useReducer } from "react"; // Manages our state
+import CartIcon from "../components/Cart/CartIcon";
+
 import CartContext from "./cart-context";
+
+const defaultCartState = {
+    items: [],
+    totalAmount: 0
+};
+
+const cartReducer = (state, action) => { // Cart Reducer
+    if (action.type === 'ADD') {
+        const updatedItems = state.items.concat(action.item); // concat() adds a new item to the array and returns new array
+        const updatedTotalAmount = state.totalAmount + action.item.price * action.item.amount;
+        return {
+            items: updatedItems,
+            totalAmount: updatedTotalAmount
+        };
+    }
+    return defaultCartState;
+};
 
 const CartProvider = (props) => {
 
-    const addItemToCartHandler = (item) => {};
+    /* 
+    // useReducer returns an array with 2 elements, hence we can use array destructuring.
+        cartState is a state snapshot, dispatchCartAction - function which allows us to dispatch an action
+        to the Reducer.
+    */
 
-    const removeItemFromCartHandler = (id) => {};
+    const [cartState, dispatchCartAction] = useReducer(cartReducer, defaultCartState);
+
+    const addItemToCartHandler = (item) => {
+        // Dispatching actions
+        dispatchCartAction({ type: 'ADD', item: item });
+    };
+
+    const removeItemFromCartHandler = (id) => {
+        dispatchCartAction({ type: 'REMOVE', id: id });
+    };
 
     const cartContext = {
-        items: [],
-        totalAmount: 0,
+        items: cartState.items,
+        totalAmount: cartState.totalAmount,
         addItem: addItemToCartHandler,
-        removeItem: removeItemFromCartHandler
+        removeItem: removeItemFromCartHandler,
     };
 
     return <CartContext.Provider value={cartContext}>
